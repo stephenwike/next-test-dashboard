@@ -1,5 +1,3 @@
-import fs from 'fs/promises';
-import path from 'path';
 import React from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -12,55 +10,7 @@ export const metadata: Metadata = {
 
 // Dynamically import StatusDropdown as a client component
 const StatusDropdown = dynamic(() => import('./StatusDropdown'), { ssr: false });
-
 const STATUS_FIELDS = ['design', 'implementation', 'integration'] as const;
-type StatusCategory = (typeof STATUS_FIELDS)[number];
-
-const findGroupedPages = async (
-  dir: string,
-  basePath = '',
-  pageStates: Record<string, any>,
-  newEntries: Set<string>
-): Promise<Record<string, string[]>> => {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
-  const grouped: Record<string, string[]> = {};
-
-  for (const entry of entries) {
-    const entryPath = path.join(dir, entry.name);
-    const relativePath = path.join(basePath, entry.name);
-
-    if (entry.isDirectory()) {
-      const pageFile = path.join(entryPath, 'page.tsx');
-      try {
-        await fs.access(pageFile);
-
-        const cleanPath = relativePath.replace(/\\/g, '/');
-        if (!pageStates[cleanPath]) {
-          pageStates[cleanPath] = {
-            design: 'not-started',
-            implementation: 'not-started',
-            integration: 'not-started',
-          };
-          newEntries.add(cleanPath);
-        }
-
-        const groupName = basePath.replace(/\\/g, '/').replace(/^\/?/, '') || 'Test Pages';
-        grouped[groupName] = grouped[groupName] || [];
-        grouped[groupName].push(relativePath);
-      } catch {
-        // skip
-      }
-
-      const subGrouped = await findGroupedPages(entryPath, relativePath, pageStates, newEntries);
-      for (const [key, paths] of Object.entries(subGrouped)) {
-        grouped[key] = grouped[key] || [];
-        grouped[key].push(...paths);
-      }
-    }
-  }
-
-  return grouped;
-};
 
 const formatGroupTitle = (group: string) =>
   group
@@ -73,24 +23,16 @@ const formatGroupTitle = (group: string) =>
     .join(' ');
 
 const TestIndexPage = async () => {
-  const testDir = path.join(process.cwd(), 'src', 'app', 'test');
-  const pageStateFile = path.join(testDir, 'pageStates.json');
+  // Call your server API to get states and pages
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/test/api/page-states`, {
+    cache: 'no-store',
+  });
 
-  let pageStates: Record<string, any> = {};
-  const newEntries = new Set<string>();
-
-  try {
-    const data = await fs.readFile(pageStateFile, 'utf-8');
-    pageStates = JSON.parse(data);
-  } catch {
-    await fs.writeFile(pageStateFile, '{}', 'utf-8');
+  if (!res.ok) {
+    throw new Error('Failed to load page states');
   }
 
-  const groupedPages = await findGroupedPages(testDir, '', pageStates, newEntries);
-
-  if (newEntries.size > 0) {
-    await fs.writeFile(pageStateFile, JSON.stringify(pageStates, null, 2), 'utf-8');
-  }
+  const { groupedPages, pageStates } = await res.json();
 
   const sortedGroups = Object.keys(groupedPages).sort();
 
@@ -101,7 +43,7 @@ const TestIndexPage = async () => {
         <div key={group} className="mb-8">
           <h2 className="text-2xl font-semibold mb-3">{formatGroupTitle(group)}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {groupedPages[group].map((routePath) => {
+            {groupedPages[group].map((routePath: string) => {
               const cleanPath = routePath.replace(/\\/g, '/');
               const state = pageStates[cleanPath] || {};
 
