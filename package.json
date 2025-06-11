@@ -1,6 +1,6 @@
 {
   "name": "next-test-dashboard",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Reusable test dashboard for Next.js projects",
   "author": "Stephen Wike",
   "license": "MIT",
