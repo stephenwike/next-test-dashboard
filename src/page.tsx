@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { Metadata } from 'next';
+import StatusDropdown from './StatusDropdown';
 
 export const metadata: Metadata = {
   title: 'Test Pages',
@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 };
 
 // Dynamically import StatusDropdown as a client component
-const StatusDropdown = dynamic(() => import('./StatusDropdown'), { ssr: false });
 const STATUS_FIELDS = ['design', 'implementation', 'integration'] as const;
 
 const formatGroupTitle = (group: string) =>
