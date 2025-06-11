@@ -1,0 +1,25 @@
+{
+  "name": "next-test-dashboard",
+  "version": "0.1.0",
+  "description": "Reusable test dashboard for Next.js projects",
+  "author": "Stephen Wike",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "next": "^13.0.0 || ^14.0.0 || ^15.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0"
+  }
+}
