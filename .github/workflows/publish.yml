@@ -35,7 +35,7 @@ jobs:
           git config user.email "actions@github.com"
           git reset --hard HEAD      # ensure clean state
           npm version patch -m "chore(release): bump version to %s [skip ci]"
-          git push origin main --follow-tags
+          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/stephenwike/next-test-dashboard.git main --follow-tags
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
